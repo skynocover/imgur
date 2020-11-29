@@ -1,0 +1,17 @@
+name = "imgur"
+type = "webpack"
+account_id = "c7f34060fc7e1530d72fcdafe6995359"
+workers_dev = true
+route = ""
+zone_id = ""
+
+kv_namespaces = [
+  { binding = "Images", id = "7b2229e0d9574db0bef8d65a6d584148", preview_id = "7b2229e0d9574db0bef8d65a6d584148" }
+]
+
+
+[dev]
+ip = "localhost"
+port = 9000
+local_protocol="http"
+upstream_protocol="https"

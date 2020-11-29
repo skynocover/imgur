@@ -1,0 +1,31 @@
+@url=http://127.0.0.1:9000
+# @url=https://pending.skynocover.workers.dev
+
+####
+GET {{url}}
+
+################################
+POST {{url}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="1.jpeg"
+Content-Type: image/jpeg
+
+< ./uploads/1.jpeg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+
+######
+PUT {{url}}/4
+Content-Type: "application/json"
+
+{
+    "id":4,
+    "name":"newdata"
+}
+
+######
+DELETE {{url}}/3
+
