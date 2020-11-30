@@ -11,7 +11,7 @@ kv_namespaces = [
 
 
 [dev]
-ip = "localhost"
+ip = "127.0.0.1"
 port = 9000
 local_protocol="http"
 upstream_protocol="https"

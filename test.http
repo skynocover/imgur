@@ -2,7 +2,7 @@
 # @url=https://pending.skynocover.workers.dev
 
 ####
-GET {{url}}/QQ
+GET {{url}}/21
 
 ################################
 POST {{url}}
@@ -11,12 +11,12 @@ Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0g
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
 Content-Disposition: form-data; name="id"
 
-QQ
+21
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
 Content-Disposition: form-data; name="image"; filename="1.jpeg"
-Content-Type: image/jpeg
+Content-Type: image/png
 
-< ./uploads/1.jpg
+< ./uploads/2.png
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 
