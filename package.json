@@ -12,5 +12,10 @@
   "license": "MIT",
   "devDependencies": {
     "prettier": "^1.18.2"
+  },
+  "dependencies": {
+    "buffer-image-size": "^0.6.4",
+    "pngjs": "^6.0.0",
+    "stream": "^0.0.2"
   }
 }

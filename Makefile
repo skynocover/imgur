@@ -8,3 +8,6 @@ publish:
 
 generate:
 	wrangler generate $(NAME) --type=webpack
+
+login:
+	wrangler login
