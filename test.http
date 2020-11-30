@@ -1,18 +1,22 @@
-@url=http://127.0.0.1:9000
+@url=http://localhost:9000
 # @url=https://pending.skynocover.workers.dev
 
 ####
-GET {{url}}
+GET {{url}}/QQ
 
 ################################
 POST {{url}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="id"
+
+QQ
+------WebKitFormBoundary7MA4YWxkTrZu0gW
 Content-Disposition: form-data; name="image"; filename="1.jpeg"
 Content-Type: image/jpeg
 
-< ./uploads/1.jpeg
+< ./uploads/1.jpg
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 

@@ -2,15 +2,8 @@ addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
 })
 
-const setCache = (name, data) => Images.put(name, JSON.stringify(data))
-const getCache = async name => {
-  let list = []
-  let data = await Pends.get(name)
-  if (data) {
-    list = JSON.parse(data)
-  }
-  return list
-}
+const setCache = async (name, data) => await Images.put(name, data)
+const getCache = async name => await Images.get(name)
 
 /**
  * Respond with hello worker text
@@ -32,15 +25,17 @@ async function handleRequest(request) {
         return new Response('No parts!')
       }
 
-      if (parts.length > 1) {
-        return new Response('To many parts!')
-      }
+      const idbuff = uint8Arrray.slice(
+        parts[0].index,
+        parts[0].index + parts[0].length,
+      )
 
-      const [part] = parts
-      // const type =
-      //   part.headers.find(h => h.name === 'Content-Type')?.values[0] ||
-      //   'application/octet-stream'
-      const blob = uint8Arrray.slice(part.index, part.index + part.length)
+      const id = String.fromCharCode.apply(null, new Uint8Array(idbuff))
+
+      const blob = uint8Arrray.slice(
+        parts[1].index,
+        parts[1].index + parts[1].length,
+      )
 
       var binary = ''
       var bytes = new Uint8Array(blob)
@@ -49,8 +44,26 @@ async function handleRequest(request) {
         binary += String.fromCharCode(bytes[i])
       }
 
-      return new Response(btoa(binary), {
-        headers: { 'Content-Type': 'application/octet-stream' },
+      await setCache(id, btoa(binary))
+
+      return new Response(JSON.stringify(res), { status: 200 })
+
+    case 'GET':
+      const url = new URL(request.url)
+      const { pathname } = url
+      let path = pathname.substring(1)
+
+      let base64code = await getCache(path)
+
+      var binary_string = atob(base64code)
+      var len = binary_string.length
+      var bytes = new Uint8Array(len)
+      for (var i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i)
+      }
+
+      return new Response(bytes.buffer, {
+        headers: { 'Content-Type': 'image/jpeg' },
       })
 
     case 'PUT':
@@ -79,13 +92,6 @@ async function handleRequest(request) {
       newdata = list.filter(item => item.id != id)
       await setCache(newdata)
       return new Response('Hello worker delete!', { status: 200 })
-
-    case 'GET':
-      res.list = list = await getCache()
-      return new Response(JSON.stringify(res), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      })
 
     default:
       res.errorCode = 100

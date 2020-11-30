@@ -12,9 +12,5 @@
   "license": "MIT",
   "devDependencies": {
     "prettier": "^1.18.2"
-  },
-  "dependencies": {
-    "formidable": "^1.2.2",
-    "fs": "^0.0.1-security"
   }
 }
