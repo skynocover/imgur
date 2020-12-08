@@ -1,3 +1,6 @@
+const PNG = require('pngjs').PNG;
+const stream = require('stream');
+
 addEventListener('fetch', (event) => {
   event.respondWith(handleRequest(event.request));
 });
@@ -21,9 +24,9 @@ const handleRequest = async (request) => {
     case 'POST':
       try {
         let { id, image, type } = await getImage(request);
-        console.log(id, type);
+
         let bimage = { type, image: btoa(image) };
-        console.log(bimage.image);
+
         await setCache(id, JSON.stringify(bimage));
         return new Response(JSON.stringify(res), { status: 200 });
       } catch (err) {
@@ -38,49 +41,36 @@ const handleRequest = async (request) => {
       let urlarr = cacheUrl.pathname.split('/');
       id = urlarr[urlarr.length - 1];
 
-      let base64code = await getCache(id);
+      let cache = null;
+      try {
+        cache = await getCache(id);
+      } catch (error) {
+        cache = await getCache('notfound');
+      }
 
-      let image = JSON.parse(base64code);
+      let { image, type } = JSON.parse(cache);
 
-      var binary_string = atob(image.image);
+      var binary_string = atob(image);
       var len = binary_string.length;
       var bytes = new Uint8Array(len);
       for (var i = 0; i < len; i++) {
         bytes[i] = binary_string.charCodeAt(i);
       }
 
-      let options = {
-        cf: {
-          image: {
-            fit: 'scale-down',
-            trim: { left: 500, right: 300 },
-          },
-        },
-      };
+      let newbuffer = null;
 
-      if (urlarr[1] == 'thumbnail') {
-        const imageRequest = new Request(
-          'https://i2.wp.com/blog.wu-boy.com/wp-content/uploads/2015/12/cropped-22781849673_d7adeace5a_k.jpg',
-          {
-            headers: request.headers,
-          },
-        );
-
-        const response = await fetch(imageRequest, options);
-        if (response.ok) {
-          return response;
-        } else {
-          return fetch(
-            'https://i2.wp.com/farm1.staticflickr.com/800/40815293371_85ca0b960f_m.jpg?resize=240%2C130&ssl=1',
-          );
+      cobRes(bytes, 100, (buffer) => {
+        let len = buffer.length;
+        console.log('length: ', len);
+        newbuffer = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          newbuffer[i] = buffer.charCodeAt(i);
         }
-      } else {
-        return new Response(bytes.buffer, {
-          headers: { 'Content-Type': base64code.type },
-        });
-      }
+      });
 
-    // return new Response(JSON.stringify(res), { status: 200 });
+      return new Response(newbuffer.buffer, {
+        headers: { 'Content-Type': type },
+      });
 
     case 'PUT':
       jsonObject = await request.json();
@@ -142,6 +132,70 @@ const getImage = async (request) => {
       return;
     }
   });
+};
+
+const cobRes = (iBuf, width, cb) => {
+  b2s(iBuf)
+    .pipe(
+      new PNG({
+        filterType: -1,
+      }),
+    )
+    .on('parsed', function() {
+      var nw = width;
+      var nh = (nw * this.height) / this.width;
+      var f = resize(this, nw, nh);
+
+      sbuff(f.pack(), (b) => {
+        cb(b);
+      });
+    });
+
+  function resize(srcPng, width, height) {
+    var rez = new PNG({
+      width: width,
+      height: height,
+    });
+    for (var i = 0; i < width; i++) {
+      var tx = i / width,
+        ssx = Math.floor(tx * srcPng.width);
+      for (var j = 0; j < height; j++) {
+        var ty = j / height,
+          ssy = Math.floor(ty * srcPng.height);
+        var indexO = (ssx + srcPng.width * ssy) * 4,
+          indexC = (i + width * j) * 4,
+          rgbaO = [
+            srcPng.data[indexO],
+            srcPng.data[indexO + 1],
+            srcPng.data[indexO + 2],
+            srcPng.data[indexO + 3],
+          ];
+        rez.data[indexC] = rgbaO[0];
+        rez.data[indexC + 1] = rgbaO[1];
+        rez.data[indexC + 2] = rgbaO[2];
+        rez.data[indexC + 3] = rgbaO[3];
+      }
+    }
+    return rez;
+  }
+
+  function b2s(b) {
+    var str = new stream.Readable();
+    str.push(b);
+    str.push(null);
+    return str;
+  }
+  function sbuff(stream, cb) {
+    var bufs = [];
+    var pk = stream;
+    pk.on('data', (d) => {
+      bufs.push(d);
+    });
+    pk.on('end', () => {
+      var buff = Buffer.concat(bufs);
+      cb(buff);
+    });
+  }
 };
 
 function* parseMimeMultipart(/** @type {Uint8Array} */ uint8Array) {
