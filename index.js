@@ -34,7 +34,9 @@ const handleRequest = async (request) => {
 
     case 'GET':
       cacheUrl = new URL(request.url);
-      id = cacheUrl.pathname.slice(1);
+
+      let urlarr = cacheUrl.pathname.split('/');
+      id = urlarr[urlarr.length - 1];
 
       let base64code = await getCache(id);
 
@@ -47,9 +49,38 @@ const handleRequest = async (request) => {
         bytes[i] = binary_string.charCodeAt(i);
       }
 
-      return new Response(bytes.buffer, {
-        headers: { 'Content-Type': base64code.type },
-      });
+      let options = {
+        cf: {
+          image: {
+            fit: 'scale-down',
+            trim: { left: 500, right: 300 },
+          },
+        },
+      };
+
+      if (urlarr[1] == 'thumbnail') {
+        const imageRequest = new Request(
+          'https://i2.wp.com/blog.wu-boy.com/wp-content/uploads/2015/12/cropped-22781849673_d7adeace5a_k.jpg',
+          {
+            headers: request.headers,
+          },
+        );
+
+        const response = await fetch(imageRequest, options);
+        if (response.ok) {
+          return response;
+        } else {
+          return fetch(
+            'https://i2.wp.com/farm1.staticflickr.com/800/40815293371_85ca0b960f_m.jpg?resize=240%2C130&ssl=1',
+          );
+        }
+      } else {
+        return new Response(bytes.buffer, {
+          headers: { 'Content-Type': base64code.type },
+        });
+      }
+
+    // return new Response(JSON.stringify(res), { status: 200 });
 
     case 'PUT':
       jsonObject = await request.json();

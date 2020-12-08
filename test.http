@@ -2,6 +2,10 @@
 # @url=https://pending.skynocover.workers.dev
 
 ####
+GET {{url}}/thumbnail/21
+
+####
+####
 GET {{url}}/21
 
 ################################
